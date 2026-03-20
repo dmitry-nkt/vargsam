@@ -1,0 +1,87 @@
+---
+const {
+  site,
+  yandexOpenUrl,
+  yandexEmbedUrl,
+} = Astro.props as {
+  site: typeof import('../content/site').site;
+  yandexOpenUrl: string;
+  yandexEmbedUrl: string;
+};
+---
+
+<section class="section" id="contact" aria-label="Контакты">
+  <div class="container">
+    <div class="section__head">
+      <div>
+        <div class="kicker">Контакты</div>
+        <h2>Связаться и записаться</h2>
+        <p class="sub">
+          Оставьте заявку в Google Form или используйте телефон. Адрес и карта — ниже.
+        </p>
+      </div>
+    </div>
+
+    <div class="contact-grid">
+      <div class="contact-card">
+        <div class="field">
+          <strong>Телефон:</strong> <a href={`tel:${site.brand.phoneTel}`}>{site.brand.phoneDisplay}</a>
+        </div>
+        <div class="field">
+          <strong>Адрес:</strong> {site.contact.address}
+        </div>
+
+        <div class="contact-actions">
+          <a
+            class="btn btn--ghost"
+            href={yandexOpenUrl}
+            target="_blank"
+            rel="noreferrer noopener"
+          >
+            Открыть в Яндекс картах
+          </a>
+        </div>
+
+        <div class="field" style="margin-top:18px;">
+          <strong>Форма записи:</strong>
+          {site.contact.googleFormUrl ? (
+            <span>открывается по ссылке</span>
+          ) : (
+            <span>пока будет доступна — можно связаться по телефону</span>
+          )}
+        </div>
+
+        {site.contact.googleFormUrl ? (
+          <div class="form-shell" aria-label="Форма записи">
+            <a
+              class="btn btn--ghost"
+              href={site.contact.googleFormUrl}
+              target="_blank"
+              rel="noreferrer noopener"
+            >
+              Открыть форму в новой вкладке
+            </a>
+          </div>
+        ) : (
+          <div class="card" style="margin-top:14px;">
+            <h3 style="margin-top:0;">Форма скоро будет доступна</h3>
+            <p>
+              Пришлите URL Google Form — и я встрою её сюда встраиваемым блоком.
+              Пока используйте телефон для записи.
+            </p>
+          </div>
+        )}
+      </div>
+
+      <div>
+        <iframe
+          class="map-frame"
+          src={yandexEmbedUrl}
+          title="Яндекс карта (адрес)"
+          loading="lazy"
+        />
+      </div>
+    </div>
+  </div>
+</section>
+

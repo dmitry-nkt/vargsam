@@ -1,0 +1,15 @@
+{
+  "name": "scenax-card-site",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "check": "astro check"
+  },
+  "devDependencies": {
+    "astro": "5.18.1"
+  }
+}
+

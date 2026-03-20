@@ -1,0 +1,86 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import {site} from '../content/site';
+import HeroSection from '../components/HeroSection.astro';
+import EQSection from '../components/EQSection.astro';
+import ServicesSection from '../components/ServicesSection.astro';
+import PricingSection from '../components/PricingSection.astro';
+import TestimonialsSection from '../components/TestimonialsSection.astro';
+import ContactSection from '../components/ContactSection.astro';
+import LocalBusinessSchema from '../components/LocalBusinessSchema.astro';
+import AboutSection from '../components/AboutSection.astro';
+
+const yandexQuery = encodeURIComponent(site.contact.address);
+const yandexOpenUrl = `${site.contact.yandexTextQueryUrl}${yandexQuery}`;
+const yandexEmbedUrl = `https://yandex.ru/map-widget/v1/?mode=search&text=${yandexQuery}`;
+
+const ctaHref = site.contact.googleFormUrl ? site.contact.googleFormUrl : '#contact';
+const ctaTarget = site.contact.googleFormUrl ? '_blank' : undefined;
+
+const pageTitle = 'Психолог-гипнолог Варганова — Самара: очно и онлайн';
+const pageDescription =
+  'Консультации психолога-гипнолога в Самаре: регрессивный гипноз, EQ, игра Лила, расстановки. Первичная консультация 1 час — 0 ₽.';
+---
+
+<BaseLayout title={pageTitle} description={pageDescription}>
+  <LocalBusinessSchema slot="head" />
+  <header class="topbar">
+    <div class="container topbar__inner">
+      <div class="brand" aria-label="Бренд">
+        <div class="brand__mark" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none">
+            <path
+              d="M12 2.5L21 20.5H3L12 2.5Z"
+              stroke="white"
+              stroke-width="1.6"
+              stroke-linejoin="round"
+            />
+            <path
+              d="M12 7L17 18H7L12 7Z"
+              fill="rgba(255,255,255,0.18)"
+              stroke="rgba(255,255,255,0.8)"
+              stroke-width="1.2"
+              stroke-linejoin="round"
+            />
+          </svg>
+        </div>
+        <div class="brand__title">
+          <strong>{site.brand.title}</strong>
+          <span>{site.hero.kicker}</span>
+        </div>
+      </div>
+
+      <nav class="nav" aria-label="Навигация по странице">
+        {site.nav.map((n) => (
+          <a href={`#${n.id}`}>{n.label}</a>
+        ))}
+      </nav>
+
+      <a
+        class="btn"
+        href={ctaHref}
+        target={ctaTarget}
+        rel={ctaTarget === '_blank' ? 'noreferrer noopener' : undefined}
+      >
+        {site.hero.cta}
+      </a>
+    </div>
+  </header>
+
+  <main>
+    <HeroSection site={site} social={site.social} />
+    <EQSection site={site} />
+    <AboutSection site={site} />
+    <ServicesSection site={site} />
+    <PricingSection site={site} />
+    <TestimonialsSection site={site} />
+    <ContactSection site={site} yandexOpenUrl={yandexOpenUrl} yandexEmbedUrl={yandexEmbedUrl} />
+
+    <footer class="footer">
+      <div class="container">
+        © {new Date().getFullYear()} {site.brand.title}. Все права защищены.
+      </div>
+    </footer>
+  </main>
+</BaseLayout>
+

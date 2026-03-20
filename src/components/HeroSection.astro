@@ -1,0 +1,72 @@
+---
+import SocialButtons from './SocialButtons.astro';
+import CheckIcon from './CheckIcon.astro';
+
+const {site} = Astro.props as {
+  site: {
+    hero: {
+      kicker: string;
+      bullets: string[];
+      highlights: string[];
+      cta: string;
+    };
+  };
+};
+const {social} = Astro.props as {social: Array<{kind: string; href: string; label: string}>};
+---
+
+<section class="hero" aria-label="Первый экран">
+  <div class="container hero__grid">
+    <div class="hero__left">
+      <div class="pillrow" aria-label="Преимущества">
+        <div class="pill">
+          <span aria-hidden="true">✓</span> {site.hero.kicker}
+        </div>
+      </div>
+
+      <h1 class="hero__title">
+        <span aria-hidden="true">ПОМОГУ</span>
+        <span class="sr-only">
+          Психолог-гипнолог Варганова — консультации в Самаре (очно и онлайн)
+        </span>
+      </h1>
+
+      <div class="hero__bullets">
+        <ul class="list-check">
+          {site.hero.bullets.map((b) => (
+            <li>
+              <CheckIcon />
+              <span>{b}</span>
+            </li>
+          ))}
+        </ul>
+
+        <div class="hero__highlights" aria-label="Условия консультаций">
+          {site.hero.highlights.map((h) => (
+            <div class="hrow">
+              <CheckIcon />
+              <span>{h}</span>
+            </div>
+          ))}
+        </div>
+
+        <div class="contact-actions" aria-label="Социальные сети">
+          <SocialButtons social={social} />
+        </div>
+      </div>
+    </div>
+
+    <div class="hero__card" aria-label="Фоновое изображение">
+      <img
+        src="assets/hero-bg.png"
+        alt="Северное сияние"
+        loading="eager"
+        fetchpriority="high"
+        decoding="async"
+        width="1024"
+        height="576"
+      />
+    </div>
+  </div>
+</section>
+

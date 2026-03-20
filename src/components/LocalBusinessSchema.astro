@@ -1,0 +1,50 @@
+---
+import {site} from '../content/site';
+
+function extractCityAndStreet(address: string) {
+  // Expected format: "г. Самара, ул. ..., д. ..., 2 этаж, каб. ..."
+  const parts = address.split(',');
+  const first = parts[0]?.trim() ?? '';
+  const city = first.replace(/^г\.\s*/i, '').replace(/^г\s*/i, '').trim();
+  const street = parts.slice(1).join(',').trim();
+  return {city, street};
+}
+
+const {city, street} = extractCityAndStreet(site.contact.address);
+
+const sameAs = site.social
+  .filter((s: any) => Boolean(s.href) && s.href !== '#')
+  .map((s: any) => s.href);
+
+const schema = {
+  '@context': 'https://schema.org',
+  '@type': 'LocalBusiness',
+  name: site.brand.title,
+  additionalType: 'https://schema.org/Psychologist',
+  description:
+    'Консультации психолога-гипнолога в Самаре (очно и онлайн): регрессивный гипноз, работа с эмоциональным интеллектом (EQ), игра Лила и расстановки. Первичная консультация 1 час — 0 ₽.',
+  telephone: site.brand.phoneDisplay,
+  address: {
+    '@type': 'PostalAddress',
+    streetAddress: site.contact.address,
+    addressLocality: city || 'Самара',
+    addressCountry: 'RU',
+  },
+  areaServed: [
+    { '@type': 'City', name: city || 'Самара' },
+    { '@type': 'AdministrativeArea', name: 'Россия' },
+  ],
+  sameAs,
+  contactPoint: [
+    {
+      '@type': 'ContactPoint',
+      contactType: 'booking',
+      telephone: site.brand.phoneTel,
+      availableLanguage: ['ru'],
+    },
+  ],
+};
+---
+
+<script type="application/ld+json" set:html={JSON.stringify(schema)} />
+

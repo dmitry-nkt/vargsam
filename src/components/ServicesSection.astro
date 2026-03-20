@@ -1,0 +1,29 @@
+---
+const {site} = Astro.props as {
+  site: { services: Array<{title: string; description: string}> };
+};
+---
+
+<section class="section" aria-label="Услуги">
+  <div class="container">
+    <div class="section__head">
+      <div>
+        <div class="kicker">Услуги</div>
+        <h2>Выберите формат</h2>
+        <p class="sub">
+          Сеансы и практики, которые помогут глубже разобраться в запросе и проработать первопричины.
+        </p>
+      </div>
+    </div>
+
+    <div class="grid-3">
+      {site.services.map((s) => (
+        <div class="card service-card">
+          <h3>{s.title}</h3>
+          <p>{s.description}</p>
+        </div>
+      ))}
+    </div>
+  </div>
+</section>
+

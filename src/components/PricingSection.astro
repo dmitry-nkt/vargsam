@@ -1,0 +1,51 @@
+---
+import CheckIcon from './CheckIcon.astro';
+
+const {site} = Astro.props as {
+  site: {
+    pricing: {
+      title: string;
+      items: Array<{
+        title: string;
+        meta: string;
+        bullets: string[];
+        note?: string;
+      }>;
+    };
+  };
+};
+---
+
+<section class="section" id="pricing" aria-label="Стоимость">
+  <div class="container">
+    <div class="section__head">
+      <div>
+        <div class="kicker">Цены</div>
+        <h2>{site.pricing.title}</h2>
+      </div>
+    </div>
+
+    <div class="price-list">
+      {site.pricing.items.map((item) => (
+        <div class="price-item">
+          <div class="price-item__top">
+            <div style="display:flex; gap:12px; align-items:flex-start;">
+              <CheckIcon />
+              <strong>{item.title}</strong>
+            </div>
+            <div class="price-meta">{item.meta}</div>
+          </div>
+
+          <ul class="price-bullets">
+            {item.bullets.map((b) => (
+              <li>{b}</li>
+            ))}
+          </ul>
+
+          {item.note && <p class="sub" style="margin-top:10px;">{item.note}</p>}
+        </div>
+      ))}
+    </div>
+  </div>
+</section>
+
