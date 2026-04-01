@@ -2,71 +2,54 @@
 import SocialButtons from './SocialButtons.astro';
 import CheckIcon from './CheckIcon.astro';
 
-const {site} = Astro.props as {
-  site: {
-    hero: {
-      kicker: string;
-      bullets: string[];
-      highlights: string[];
-      cta: string;
-    };
-  };
+const base = import.meta.env.BASE_URL;
+const basePath = base.endsWith('/') ? base : `${base}/`;
+
+const { site } = Astro.props as {
+  site: typeof import('../content/site').site;
 };
-const {social} = Astro.props as {social: Array<{kind: string; href: string; label: string}>};
+const { social } = Astro.props as { social: typeof site.social };
 ---
 
-<section class="hero" aria-label="Первый экран">
+<section class="hero" id="top" aria-label="Первый экран">
   <div class="container hero__grid">
     <div class="hero__left">
-      <div class="pillrow" aria-label="Преимущества">
-        <div class="pill">
-          <span aria-hidden="true">✓</span> {site.hero.kicker}
-        </div>
-      </div>
-
-      <h1 class="hero__title">
-        <span aria-hidden="true">ПОМОГУ</span>
-        <span class="sr-only">
-          Психолог-гипнолог Варганова — консультации в Самаре (очно и онлайн)
-        </span>
+      <h1 class="sr-only">
+        Психолог-гипнолог {site.brand.legalName} — консультации в Самаре, очно и онлайн
       </h1>
 
-      <div class="hero__bullets">
-        <ul class="list-check">
-          {site.hero.bullets.map((b) => (
-            <li>
-              <CheckIcon />
-              <span>{b}</span>
-            </li>
-          ))}
-        </ul>
-
-        <div class="hero__highlights" aria-label="Условия консультаций">
-          {site.hero.highlights.map((h) => (
-            <div class="hrow">
-              <CheckIcon />
-              <span>{h}</span>
-            </div>
-          ))}
-        </div>
-
-        <div class="contact-actions" aria-label="Социальные сети">
-          <SocialButtons social={social} />
-        </div>
+      <div class="hero__service-box" aria-label="О услуге">
+        <p class="hero__service-heading">{site.hero.serviceIntro.heading}</p>
+        {site.hero.serviceIntro.paragraphs.map((p) => (
+          <p class="hero__service-text">{p}</p>
+        ))}
       </div>
+
+      <div class="hero__offers" aria-label="Специальные условия">
+        {site.hero.offers.map((o) => (
+          <div class="hrow">
+            <CheckIcon />
+            <span>{o}</span>
+          </div>
+        ))}
+      </div>
+
+      <section class="hero__communities" aria-label="Сообщества">
+        <p class="hero__communities-caption">{site.hero.communitiesCaption}</p>
+        <SocialButtons social={social} />
+      </section>
     </div>
 
-    <div class="hero__card" aria-label="Фоновое изображение">
+    <div class="hero__card" aria-hidden="false">
       <img
-        src="assets/hero-bg.png"
-        alt="Северное сияние"
+        src={`${basePath}assets/portrait.png`}
+        alt="Наталья Юрьевна Варганова, психолог-гипнолог"
         loading="eager"
         fetchpriority="high"
         decoding="async"
         width="1024"
-        height="576"
+        height="1024"
       />
     </div>
   </div>
 </section>
-

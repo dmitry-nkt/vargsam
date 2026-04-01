@@ -1,38 +1,23 @@
 ---
-import CheckIcon from './CheckIcon.astro';
-
-const {site} = Astro.props as {
-  site: {
-    pricing: {
-      title: string;
-      items: Array<{
-        title: string;
-        meta: string;
-        bullets: string[];
-        note?: string;
-      }>;
-    };
-  };
+const { site } = Astro.props as {
+  site: typeof import('../content/site').site;
 };
 ---
 
 <section class="section" id="pricing" aria-label="Стоимость">
   <div class="container">
-    <div class="section__head">
-      <div>
-        <div class="kicker">Цены</div>
-        <h2>{site.pricing.title}</h2>
+    <div class="section__head section__head--split">
+      <div class="section__head-main">
+        <h2 class="pricing-title">{site.pricing.title}</h2>
       </div>
+      <p class="section-kicker-muted">{site.pricing.sectionKicker}</p>
     </div>
 
     <div class="price-list">
       {site.pricing.items.map((item) => (
         <div class="price-item">
           <div class="price-item__top">
-            <div style="display:flex; gap:12px; align-items:flex-start;">
-              <CheckIcon />
-              <strong>{item.title}</strong>
-            </div>
+            <strong class="price-item__name">{item.title}</strong>
             <div class="price-meta">{item.meta}</div>
           </div>
 
@@ -42,10 +27,9 @@ const {site} = Astro.props as {
             ))}
           </ul>
 
-          {item.note && <p class="sub" style="margin-top:10px;">{item.note}</p>}
+          {item.note && <p class="price-note">{item.note}</p>}
         </div>
       ))}
     </div>
   </div>
 </section>
-

@@ -1,0 +1,89 @@
+---
+import SocialButtons from './SocialButtons.astro';
+import { site } from '../content/site';
+import CheckIcon from './CheckIcon.astro';
+
+const base = import.meta.env.BASE_URL;
+const basePath = base.endsWith('/') ? base : `${base}/`;
+const { brand, contact, social, legal, hero } = site;
+---
+
+<footer class="site-footer" aria-label="Подвал сайта">
+  <div class="container site-footer__grid">
+    <div class="site-footer__col">
+      <p class="site-footer__heading">Владелец сайта</p>
+      <p class="site-footer__text">{brand.legalName}</p>
+
+      <div class="footer-contact-btns">
+        <a class="btn btn--contact" href={`tel:${brand.phoneTel}`} aria-label={`Позвонить: ${brand.phoneDisplay}`}>
+          <svg class="btn__icon" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+            <path
+              fill="currentColor"
+              d="M6.62 10.79a15.15 15.15 0 006.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57a1 1 0 011 1V20a1 1 0 01-1 1C10.07 21 3 13.93 3 5a1 1 0 011-1h3.5a1 1 0 011 1c0 1.24.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"
+            />
+          </svg>
+          {brand.phoneDisplay}
+        </a>
+        <a
+          class="btn btn--contact"
+          href={`mailto:${brand.email}`}
+          aria-label={`Написать на электронную почту ${brand.email}`}
+        >
+          <svg class="btn__icon" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+            <path
+              fill="currentColor"
+              d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4-8 5L4 8V6l8 5 8-5v2z"
+            />
+          </svg>
+          {brand.email}
+        </a>
+      </div>
+
+      <p class="site-footer__docs-label">Документы для скачивания</p>
+      <ul class="legal-downloads" role="list">
+        {legal.downloads.map((d) => (
+          <li>
+            <a class="btn btn--doc" href={`${basePath}${d.href}`} download>
+              {d.label}
+            </a>
+          </li>
+        ))}
+      </ul>
+
+      <div class="site-footer__social">
+        <SocialButtons social={social} />
+      </div>
+    </div>
+    <div class="site-footer__col">
+      <p class="site-footer__heading">Адрес</p>
+      <p class="site-footer__text">{contact.address}</p>
+      <a
+        class="btn btn--ghost btn--map site-footer__mapbtn"
+        href={contact.yandexOrgUrl}
+        target="_blank"
+        rel="noreferrer noopener"
+      >
+        <svg class="btn__icon" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+          <path
+            fill="currentColor"
+            d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5A2.5 2.5 0 1 1 12 6.5a2.5 2.5 0 0 1 0 5z"
+          />
+        </svg>
+        Открыть в Яндекс Картах
+      </a>
+    </div>
+  </div>
+  <div class="container site-footer__offers" aria-label="Условия">
+    <ul class="site-footer__offer-list">
+      {hero.offers.map((o) => (
+        <li>
+          <CheckIcon />
+          <span>{o}</span>
+        </li>
+      ))}
+    </ul>
+  </div>
+  <div class="container site-footer__bottom">
+    © {new Date().getFullYear()} {brand.title}. Все права защищены.
+  </div>
+</footer>

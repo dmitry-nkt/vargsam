@@ -3,13 +3,14 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "astro dev",
-    "build": "astro build",
-    "preview": "astro preview",
+    "sync-docs": "node scripts/sync-docs.mjs",
+    "dev": "npm run sync-docs && astro dev",
+    "build": "npm run sync-docs && astro build",
+    "preview": "npm run sync-docs && astro preview",
     "check": "astro check"
   },
   "devDependencies": {
-    "astro": "5.18.1"
+    "astro": "5.18.1",
+    "simple-icons": "^16.14.0"
   }
 }
-

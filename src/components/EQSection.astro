@@ -1,26 +1,18 @@
 ---
-import CheckIcon from './CheckIcon.astro';
-
-const {site} = Astro.props as {
-  site: {
-    eq: {
-      title: string;
-      description: string;
-      cards: Array<{title: string; description: string}>;
-    };
-  };
+const { site } = Astro.props as {
+  site: typeof import('../content/site').site;
 };
 ---
 
-<section class="section" id="help" aria-label="С чем помогу">
+<section class="section" id="help" aria-label="С чем помогаю">
   <div class="container">
     <div class="eqwrap">
-      <div class="section__head">
-        <div>
-          <div class="kicker">С чем помогаю</div>
-          <h2>{site.eq.title}</h2>
-          <p class="sub">{site.eq.description}</p>
+      <div class="section__head section__head--split">
+        <div class="section__head-main">
+          <h2 class="eq-title">{site.eq.title}</h2>
+          <p class="eq-description">{site.eq.description}</p>
         </div>
+        <p class="section-kicker-muted">{site.eq.sectionKicker}</p>
       </div>
 
       <div class="grid-3">
@@ -34,4 +26,3 @@ const {site} = Astro.props as {
     </div>
   </div>
 </section>
-

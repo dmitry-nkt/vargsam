@@ -1,0 +1,84 @@
+---
+import { site } from '../content/site';
+import SocialButtons from './SocialButtons.astro';
+
+const { bookingModal, brand, social } = site;
+---
+
+<dialog class="booking-dialog" id="booking-dialog" aria-labelledby="booking-dialog-title">
+  <div class="booking-dialog__panel">
+    <button type="button" class="booking-dialog__close" aria-label="Закрыть" data-booking-close>
+      ×
+    </button>
+    <h2 id="booking-dialog-title" class="booking-dialog__title">
+      {bookingModal.title}
+      <span class="booking-dialog__subtitle">{bookingModal.subtitle}</span>
+    </h2>
+    <form class="booking-form" id="booking-form" novalidate>
+      <label class="booking-field">
+        <span>{bookingModal.nameLabel}</span>
+        <input name="name" type="text" autocomplete="name" required maxlength="120" />
+      </label>
+      <label class="booking-field">
+        <span>{bookingModal.phoneLabel}</span>
+        <input name="phone" type="text" autocomplete="tel" required maxlength="80" />
+      </label>
+      <fieldset class="booking-fieldset">
+        <legend>{bookingModal.channelLegend}</legend>
+        <div class="booking-radios">
+          {bookingModal.channels.map((c) => (
+            <label class="booking-radio">
+              <input type="radio" name="channel" value={c.value} required />
+              <span>{c.label}</span>
+            </label>
+          ))}
+        </div>
+      </fieldset>
+      <button type="submit" class="btn booking-submit">
+        {bookingModal.submit}
+      </button>
+    </form>
+    <p class="booking-communities-caption">{bookingModal.communitiesCaption}</p>
+    <SocialButtons social={social} />
+  </div>
+</dialog>
+
+<script define:vars={{ email: brand.email }}>
+  const dialog = document.getElementById('booking-dialog');
+  const openers = document.querySelectorAll('[data-open-booking]');
+  const closers = document.querySelectorAll('[data-booking-close]');
+  const form = document.getElementById('booking-form');
+
+  openers.forEach((el) => {
+    el.addEventListener('click', () => {
+      dialog?.showModal();
+    });
+  });
+
+  closers.forEach((el) => {
+    el.addEventListener('click', () => dialog?.close());
+  });
+
+  dialog?.addEventListener('click', (e) => {
+    if (e.target === dialog) dialog.close();
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && dialog?.open) dialog.close();
+  });
+
+  form?.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const fd = new FormData(form);
+    const name = String(fd.get('name') || '').trim();
+    const phone = String(fd.get('phone') || '').trim();
+    const channel = String(fd.get('channel') || '').trim();
+    if (!name || !phone || !channel) return;
+
+    const subject = encodeURIComponent('Запись на первичную консультацию');
+    const body = encodeURIComponent(
+      `Имя: ${name}\nТелефон или ID: ${phone}\nКанал связи: ${channel}\n`,
+    );
+    window.location.href = `mailto:${email}?subject=${subject}&body=${body}`;
+  });
+</script>

@@ -1,87 +1,62 @@
 ---
-const {
-  site,
-  yandexOpenUrl,
-  yandexEmbedUrl,
-} = Astro.props as {
+import CheckIcon from './CheckIcon.astro';
+import SocialButtons from './SocialButtons.astro';
+
+const { site } = Astro.props as {
   site: typeof import('../content/site').site;
-  yandexOpenUrl: string;
-  yandexEmbedUrl: string;
 };
 ---
 
 <section class="section" id="contact" aria-label="Контакты">
   <div class="container">
-    <div class="section__head">
-      <div>
-        <div class="kicker">Контакты</div>
-        <h2>Связаться и записаться</h2>
-        <p class="sub">
-          Оставьте заявку в Google Form или используйте телефон. Адрес и карта — ниже.
-        </p>
-      </div>
+    <div class="section__head section__head--split">
+      <div class="section__head-main" />
+      <p class="section-kicker-muted">{site.contact.sectionKicker}</p>
     </div>
 
     <div class="contact-grid">
       <div class="contact-card">
         <div class="field">
-          <strong>Телефон:</strong> <a href={`tel:${site.brand.phoneTel}`}>{site.brand.phoneDisplay}</a>
-        </div>
-        <div class="field">
           <strong>Адрес:</strong> {site.contact.address}
         </div>
 
-        <div class="contact-actions">
-          <a
-            class="btn btn--ghost"
-            href={yandexOpenUrl}
-            target="_blank"
-            rel="noreferrer noopener"
-          >
-            Открыть в Яндекс картах
-          </a>
+        <div class="contact-offers" aria-label="Условия консультаций">
+          {site.hero.offers.map((o) => (
+            <div class="hrow hrow--compact">
+              <CheckIcon />
+              <span>{o}</span>
+            </div>
+          ))}
         </div>
 
-        <div class="field" style="margin-top:18px;">
-          <strong>Форма записи:</strong>
-          {site.contact.googleFormUrl ? (
-            <span>открывается по ссылке</span>
-          ) : (
-            <span>пока будет доступна — можно связаться по телефону</span>
-          )}
-        </div>
-
-        {site.contact.googleFormUrl ? (
-          <div class="form-shell" aria-label="Форма записи">
-            <a
-              class="btn btn--ghost"
-              href={site.contact.googleFormUrl}
-              target="_blank"
-              rel="noreferrer noopener"
-            >
-              Открыть форму в новой вкладке
-            </a>
-          </div>
-        ) : (
-          <div class="card" style="margin-top:14px;">
-            <h3 style="margin-top:0;">Форма скоро будет доступна</h3>
-            <p>
-              Пришлите URL Google Form — и я встрою её сюда встраиваемым блоком.
-              Пока используйте телефон для записи.
-            </p>
-          </div>
-        )}
+        <p class="field contact-invite">{site.contact.inviteLine}</p>
+        <SocialButtons social={site.social} />
       </div>
 
       <div>
         <iframe
           class="map-frame"
-          src={yandexEmbedUrl}
-          title="Яндекс карта (адрес)"
+          src={site.contact.yandexMapWidgetSrc}
+          title="Яндекс Карты: кабинет психолога"
           loading="lazy"
         />
+        <div class="map-open-wrap">
+          <a
+            class="btn btn--ghost btn--map"
+            href={site.contact.yandexOrgUrl}
+            target="_blank"
+            rel="noreferrer noopener"
+          >
+            <svg class="btn__icon" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+              <path
+                fill="currentColor"
+                d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5A2.5 2.5 0 1 1 12 6.5a2.5 2.5 0 0 1 0 5z"
+              />
+            </svg>
+            Открыть в Яндекс Картах
+          </a>
+        </div>
       </div>
     </div>
   </div>
 </section>
-

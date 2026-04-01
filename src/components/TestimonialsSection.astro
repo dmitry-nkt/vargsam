@@ -1,22 +1,22 @@
 ---
-const {site} = Astro.props as {
-  site: {
-    testimonials: Array<{name: string; date: string; rating: number; text: string}>;
-  };
+const { site } = Astro.props as {
+  site: typeof import('../content/site').site;
 };
 ---
 
 <section class="section" id="testimonials" aria-label="Отзывы">
   <div class="container">
-    <div class="section__head">
-      <div>
-        <div class="kicker">Отзывы</div>
-        <h2>Здесь лента отзывов</h2>
-        <p class="sub">Ниже — мнения клиентов после практик и сеансов.</p>
-      </div>
+    <div class="section__head section__head--split">
+      <div class="section__head-main" />
+      <p class="section-kicker-muted">Отзывы</p>
     </div>
 
-    <div class="reviews-grid">
+    <div
+      class="reviews-feed"
+      role="region"
+      aria-label="Отзывы клиентов, прокрутка по горизонтали"
+      tabindex="0"
+    >
       {site.testimonials.map((t) => (
         <article class="review">
           <div class="review__head">
@@ -33,7 +33,7 @@ const {site} = Astro.props as {
               <span>{t.date}</span>
             </div>
             <div class="stars" aria-label={`Оценка ${t.rating} из 5`}>
-              {Array.from({length: 5}, (_, i) => {
+              {Array.from({ length: 5 }, (_, i) => {
                 const filled = i < t.rating;
                 return (
                   <svg
@@ -46,9 +46,7 @@ const {site} = Astro.props as {
                       fill: filled ? '#f59e0b' : 'rgba(245, 158, 11, 0.28)',
                     }}
                   >
-                    <path
-                      d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"
-                    />
+                    <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
                   </svg>
                 );
               })}
@@ -60,4 +58,3 @@ const {site} = Astro.props as {
     </div>
   </div>
 </section>
-
