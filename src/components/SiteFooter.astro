@@ -43,7 +43,12 @@ const { brand, contact, social, legal, hero } = site;
       <ul class="legal-downloads" role="list">
         {legal.downloads.map((d) => (
           <li>
-            <a class="btn btn--doc" href={`${basePath}${d.href}`} download>
+            <a
+              class="btn btn--doc"
+              href={`${basePath}${d.href}`}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
               {d.label}
             </a>
           </li>
@@ -57,20 +62,16 @@ const { brand, contact, social, legal, hero } = site;
     <div class="site-footer__col">
       <p class="site-footer__heading">Адрес</p>
       <p class="site-footer__text">{contact.address}</p>
-      <a
-        class="btn btn--ghost btn--map site-footer__mapbtn"
-        href={contact.yandexOrgUrl}
-        target="_blank"
-        rel="noreferrer noopener"
-      >
-        <svg class="btn__icon" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
-          <path
-            fill="currentColor"
-            d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5A2.5 2.5 0 1 1 12 6.5a2.5 2.5 0 0 1 0 5z"
-          />
-        </svg>
-        Открыть в Яндекс Картах
-      </a>
+      <div class="site-footer__map">
+        <iframe
+          class="site-footer__map-frame"
+          title="Яндекс Карта: как добраться"
+          src={contact.yandexMapEmbedUrl}
+          loading="lazy"
+          referrerpolicy="strict-origin-when-cross-origin"
+          allowfullscreen
+        />
+      </div>
     </div>
   </div>
   <div class="container site-footer__offers" aria-label="Условия">

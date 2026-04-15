@@ -2,6 +2,13 @@
 const { site } = Astro.props as {
   site: typeof import('../content/site').site;
 };
+
+const base = import.meta.env.BASE_URL;
+const basePath = base.endsWith('/') ? base : `${base}/`;
+
+function photoSrc(file: string) {
+  return `${basePath}assets/${encodeURIComponent(file)}`;
+}
 ---
 
 <section class="section" id="testimonials" aria-label="Отзывы">
@@ -11,50 +18,139 @@ const { site } = Astro.props as {
       <p class="section-kicker-muted">Отзывы</p>
     </div>
 
-    <div
-      class="reviews-feed"
-      role="region"
-      aria-label="Отзывы клиентов, прокрутка по горизонтали"
-      tabindex="0"
-    >
-      {site.testimonials.map((t) => (
-        <article class="review">
-          <div class="review__head">
-            <div class="avatar" aria-hidden="true">
-              {t.name
-                .split(' ')
-                .filter(Boolean)
-                .slice(0, 2)
-                .map((p) => p[0])
-                .join('')}
+    <p class="reviews-carousel-hint">Листайте отзывы стрелками или свайпом.</p>
+
+    <div class="reviews-carousel">
+      <button
+        type="button"
+        class="reviews-nav reviews-nav--prev"
+        aria-controls="reviews-feed"
+        aria-label="Предыдущие отзывы"
+        disabled
+        data-reviews-prev
+      >
+        <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true">
+          <path
+            fill="currentColor"
+            d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"
+          />
+        </svg>
+      </button>
+
+      <div
+        class="reviews-feed"
+        id="reviews-feed"
+        role="region"
+        aria-label="Отзывы клиентов"
+        tabindex="0"
+        data-reviews-feed
+      >
+        {site.testimonials.map((t) => (
+          <article class="review">
+            <div class="review__head">
+              {t.photo ? (
+                <div class="avatar avatar--photo">
+                  <img
+                    src={photoSrc(t.photo)}
+                    alt=""
+                    width="84"
+                    height="84"
+                    loading="lazy"
+                    decoding="async"
+                  />
+                </div>
+              ) : (
+                <div class="avatar" aria-hidden="true">
+                  {t.name
+                    .split(' ')
+                    .filter(Boolean)
+                    .slice(0, 2)
+                    .map((p) => p[0])
+                    .join('')}
+                </div>
+              )}
+              <div class="review__title">
+                <strong>{t.name}</strong>
+                <span>{t.date}</span>
+              </div>
+              <div class="stars" aria-label={`Оценка ${t.rating} из 5`}>
+                {Array.from({ length: 5 }, (_, i) => {
+                  const filled = i < t.rating;
+                  return (
+                    <svg
+                      viewBox="0 0 24 24"
+                      width="16"
+                      height="16"
+                      aria-hidden="true"
+                      focusable="false"
+                      style={{
+                        fill: filled ? '#f59e0b' : 'rgba(245, 158, 11, 0.28)',
+                      }}
+                    >
+                      <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
+                    </svg>
+                  );
+                })}
+              </div>
             </div>
-            <div class="review__title">
-              <strong>{t.name}</strong>
-              <span>{t.date}</span>
-            </div>
-            <div class="stars" aria-label={`Оценка ${t.rating} из 5`}>
-              {Array.from({ length: 5 }, (_, i) => {
-                const filled = i < t.rating;
-                return (
-                  <svg
-                    viewBox="0 0 24 24"
-                    width="16"
-                    height="16"
-                    aria-hidden="true"
-                    focusable="false"
-                    style={{
-                      fill: filled ? '#f59e0b' : 'rgba(245, 158, 11, 0.28)',
-                    }}
-                  >
-                    <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
-                  </svg>
-                );
-              })}
-            </div>
-          </div>
-          <p>{t.text}</p>
-        </article>
-      ))}
+            <p>{t.text}</p>
+          </article>
+        ))}
+      </div>
+
+      <button
+        type="button"
+        class="reviews-nav reviews-nav--next"
+        aria-controls="reviews-feed"
+        aria-label="Следующие отзывы"
+        data-reviews-next
+      >
+        <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true">
+          <path
+            fill="currentColor"
+            d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"
+          />
+        </svg>
+      </button>
     </div>
   </div>
 </section>
+
+<script>
+  const feed = document.querySelector('[data-reviews-feed]');
+  const prev = document.querySelector('[data-reviews-prev]');
+  const next = document.querySelector('[data-reviews-next]');
+
+  function step() {
+    if (!feed) return 320;
+    const card = feed.querySelector('.review');
+    const w = card?.getBoundingClientRect().width ?? 0;
+    const gap = 18;
+    return Math.max(280, Math.min(w + gap, feed.clientWidth * 0.92));
+  }
+
+  function syncNav() {
+    if (!feed || !prev || !next) return;
+    const max = feed.scrollWidth - feed.clientWidth;
+    const left = feed.scrollLeft;
+    const eps = 6;
+    prev.toggleAttribute('disabled', left <= eps);
+    next.toggleAttribute('disabled', left >= max - eps);
+  }
+
+  prev?.addEventListener('click', () => {
+    feed?.scrollBy({ left: -step(), behavior: 'smooth' });
+  });
+
+  next?.addEventListener('click', () => {
+    feed?.scrollBy({ left: step(), behavior: 'smooth' });
+  });
+
+  feed?.addEventListener('scroll', () => {
+    window.requestAnimationFrame(syncNav);
+  });
+
+  window.addEventListener('resize', syncNav);
+  window.addEventListener('load', syncNav);
+  requestAnimationFrame(() => requestAnimationFrame(syncNav));
+</script>

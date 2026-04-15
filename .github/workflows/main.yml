@@ -28,6 +28,7 @@ jobs:
       - name: Build card site
         env:
           ASTRO_BASE: /
+          PUBLIC_WEB3FORMS_ACCESS_KEY: ${{ secrets.PUBLIC_WEB3FORMS_ACCESS_KEY }}
         run: |
           npm run build
 

@@ -10,13 +10,16 @@ if (!fs.existsSync(srcDir)) {
 }
 
 fs.mkdirSync(outDir, { recursive: true });
+for (const f of fs.readdirSync(outDir)) {
+  fs.unlinkSync(path.join(outDir, f));
+}
 
 for (const name of fs.readdirSync(srcDir)) {
-  if (!name.endsWith('.docx')) continue;
+  if (!name.endsWith('.pdf')) continue;
   let slug = name;
-  if (name.toLowerCase().includes('cookie')) slug = 'politika-cookie.docx';
-  else if (name.includes('конфиденциальности')) slug = 'politika-konfidencialnosti.docx';
-  else if (name.includes('Согласие') || name.toLowerCase().includes('согласие')) slug = 'soglasie-pd.docx';
+  if (name.toLowerCase().includes('cookie')) slug = 'politika-cookie.pdf';
+  else if (name.includes('конфиденциальности')) slug = 'politika-konfidencialnosti.pdf';
+  else if (name.includes('Согласие') || name.toLowerCase().includes('согласие')) slug = 'soglasie-pd.pdf';
   fs.copyFileSync(path.join(srcDir, name), path.join(outDir, slug));
   console.log('sync-docs:', name, '→', slug);
 }
