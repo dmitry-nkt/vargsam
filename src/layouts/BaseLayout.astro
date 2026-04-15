@@ -1,5 +1,6 @@
 ---
 import '../styles/global.css';
+import CookieConsent from '../components/CookieConsent.astro';
 
 const {
   title = 'Scenax',
@@ -15,9 +16,17 @@ const {
     <meta name="description" content={description} />
     <title>{title}</title>
     <slot name="head" />
+    <script is:inline>
+      try {
+        if (localStorage.getItem('vargsam_cookie_v1') === '1') {
+          document.documentElement.classList.add('cookie-consent-done');
+        }
+      } catch (_) {}
+    </script>
   </head>
   <body>
     <slot />
+    <CookieConsent />
   </body>
 </html>
 
