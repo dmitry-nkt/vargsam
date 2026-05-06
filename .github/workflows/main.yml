@@ -28,7 +28,7 @@ jobs:
       - name: Build card site
         env:
           ASTRO_BASE: /
-          PUBLIC_WEB3FORMS_ACCESS_KEY: ${{ secrets.PUBLIC_WEB3FORMS_ACCESS_KEY }}
+          PUBLIC_LEADS_ENDPOINT: /api/lead
         run: npm run build
 
       - name: Upload dist
@@ -74,3 +74,44 @@ jobs:
           remote_host: ${{ secrets.DEPLOY_HOST }}
           remote_user: ${{ secrets.DEPLOY_USER }}
           remote_key: ${{ secrets.DEPLOY_SSH_KEY }}
+
+  deploy-vps-leads-api:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Rsync API files to server
+        uses: burnett01/rsync-deployments@v8
+        with:
+          switches: -avzr --delete
+          path: api/
+          remote_path: ${{ secrets.DEPLOY_API_PATH }}
+          remote_host: ${{ secrets.DEPLOY_HOST }}
+          remote_user: ${{ secrets.DEPLOY_USER }}
+          remote_key: ${{ secrets.DEPLOY_SSH_KEY }}
+
+      - name: Install and restart API service
+        uses: appleboy/ssh-action@v1.2.2
+        env:
+          PORT: ${{ secrets.LEADS_PORT }}
+          ALLOW_ORIGIN: ${{ secrets.LEADS_ALLOW_ORIGIN }}
+          SMTP_HOST: ${{ secrets.LEADS_SMTP_HOST }}
+          SMTP_PORT: ${{ secrets.LEADS_SMTP_PORT }}
+          SMTP_SECURE: ${{ secrets.LEADS_SMTP_SECURE }}
+          SMTP_USER: ${{ secrets.LEADS_SMTP_USER }}
+          SMTP_PASS: ${{ secrets.LEADS_SMTP_PASS }}
+          MAIL_FROM: ${{ secrets.LEADS_MAIL_FROM }}
+          MAIL_TO: ${{ secrets.LEADS_MAIL_TO }}
+          LEADS_SUBJECT: ${{ secrets.LEADS_SUBJECT }}
+        with:
+          host: ${{ secrets.DEPLOY_HOST }}
+          username: ${{ secrets.DEPLOY_USER }}
+          key: ${{ secrets.DEPLOY_SSH_KEY }}
+          envs: PORT,ALLOW_ORIGIN,SMTP_HOST,SMTP_PORT,SMTP_SECURE,SMTP_USER,SMTP_PASS,MAIL_FROM,MAIL_TO,LEADS_SUBJECT
+          script: |
+            set -e
+            cd "${{ secrets.DEPLOY_API_PATH }}"
+            npm ci --omit=dev
+            ./deploy-restart.sh

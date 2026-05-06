@@ -28,3 +28,47 @@ npm run build
 
 Также деплой срабатывает автоматически при `push` в ветку `main`.
 
+### Мини-сервис заявок на VPS
+
+В репозитории есть `api/server.mjs` (Node.js + SMTP), принимает `POST /api/lead` и отправляет заявку на почту.
+
+Что нужно настроить один раз:
+
+1. **Nginx прокси** на VPS:
+
+```nginx
+location /api/ {
+  proxy_pass http://127.0.0.1:8787;
+  proxy_set_header Host $host;
+  proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+}
+```
+
+Для домена `yggdrasil-ko.ru` используйте:
+
+```nginx
+server {
+  server_name yggdrasil-ko.ru www.yggdrasil-ko.ru;
+
+  # ... остальная конфигурация сайта ...
+
+  location /api/ {
+    proxy_pass http://127.0.0.1:8787;
+    proxy_set_header Host $host;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+  }
+}
+```
+
+2. **GitHub Secrets** для workflow:
+`DEPLOY_API_PATH`, `LEADS_PORT`, `LEADS_ALLOW_ORIGIN`, `LEADS_SMTP_HOST`, `LEADS_SMTP_PORT`,
+`LEADS_SMTP_SECURE`, `LEADS_SMTP_USER`, `LEADS_SMTP_PASS`, `LEADS_MAIL_FROM`, `LEADS_MAIL_TO`, `LEADS_SUBJECT`.
+
+3. Убедиться, что на сервере в `DEPLOY_API_PATH` доступен `node` и `npm`.
+
+После `push` в `main` workflow автоматически:
+- деплоит статику;
+- деплоит папку `api/` на VPS;
+- выполняет `npm ci --omit=dev`;
+- перезапускает API через `api/deploy-restart.sh`.
+

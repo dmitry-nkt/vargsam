@@ -2,8 +2,12 @@
 import { site } from '../content/site';
 import SocialButtons from './SocialButtons.astro';
 
-const { bookingModal, brand, social } = site;
-const web3formsKey = import.meta.env.PUBLIC_WEB3FORMS_ACCESS_KEY ?? '';
+const { bookingModal, social } = site;
+const leadsEndpoint = import.meta.env.PUBLIC_LEADS_ENDPOINT ?? '/api/lead';
+const base = import.meta.env.BASE_URL;
+const basePath = base.endsWith('/') ? base : `${base}/`;
+const privacyPolicyHref = `${basePath}docs/politika-konfidencialnosti.pdf`;
+const ofertaHref = `${basePath}docs/oferta.pdf`;
 ---
 
 <dialog class="booking-dialog" id="booking-dialog" aria-labelledby="booking-dialog-title">
@@ -35,6 +39,19 @@ const web3formsKey = import.meta.env.PUBLIC_WEB3FORMS_ACCESS_KEY ?? '';
           ))}
         </div>
       </fieldset>
+      <label class="booking-consent">
+        <input type="checkbox" name="consent" required />
+        <span>
+          Отправляя заявку, я соглашаюсь на обработку персональных данных, принимаю условия{' '}
+          <a href={privacyPolicyHref} target="_blank" rel="noopener noreferrer">
+            политики конфиденциальности
+          </a>{' '}
+          и{' '}
+          <a href={ofertaHref} target="_blank" rel="noopener noreferrer">
+            офферты
+          </a>
+        </span>
+      </label>
       <p class="booking-form-feedback" id="booking-feedback" role="status" aria-live="polite" hidden />
       <button type="submit" class="btn booking-submit" id="booking-submit">
         {bookingModal.submit}
@@ -47,9 +64,7 @@ const web3formsKey = import.meta.env.PUBLIC_WEB3FORMS_ACCESS_KEY ?? '';
 
 <script
   define:vars={{
-    email: brand.email,
-    web3formsKey,
-    formSubject: 'Запись на первичную консультацию',
+    leadsEndpoint,
   }}
 >
   const dialog = document.getElementById('booking-dialog');
@@ -93,62 +108,49 @@ const web3formsKey = import.meta.env.PUBLIC_WEB3FORMS_ACCESS_KEY ?? '';
     const name = String(fd.get('name') || '').trim();
     const phone = String(fd.get('phone') || '').trim();
     const channel = String(fd.get('channel') || '').trim();
-    if (!name || !phone || !channel) return;
-
-    const key = typeof web3formsKey === 'string' ? web3formsKey.trim() : '';
-
-    if (key) {
-      const originalLabel = submitBtn?.textContent ?? '';
-      if (submitBtn) {
-        submitBtn.disabled = true;
-        submitBtn.textContent = 'Отправка…';
-      }
-      setFeedback('Отправляем…', null);
-      try {
-        const body = new FormData();
-        body.append('access_key', key);
-        body.append('subject', formSubject);
-        body.append('name', name);
-        body.append('phone', phone);
-        body.append(
-          'message',
-          `Имя: ${name}\nТелефон или ID: ${phone}\nКуда написать: ${channel}`,
-        );
-
-        const res = await fetch('https://api.web3forms.com/submit', {
-          method: 'POST',
-          body,
-        });
-        const data = await res.json().catch(() => ({}));
-        if (res.ok && data.success) {
-          setFeedback('Спасибо! Заявка отправлена — скоро свяжусь с вами.', 'ok');
-          form.reset();
-          window.setTimeout(() => {
-            dialog?.close();
-            setFeedback('', null);
-          }, 2200);
-        } else {
-          throw new Error(typeof data.message === 'string' ? data.message : 'Ошибка сервиса');
-        }
-      } catch {
-        setFeedback(
-          'Не удалось отправить заявку. Позвоните или напишите в Telegram / VK — ссылки ниже.',
-          'error',
-        );
-      } finally {
-        if (submitBtn) {
-          submitBtn.disabled = false;
-          submitBtn.textContent = originalLabel;
-        }
-      }
+    const consent = fd.get('consent') === 'on';
+    if (!name || !phone || !channel || !consent) {
+      setFeedback('Подтвердите согласие на обработку персональных данных.', 'error');
       return;
     }
 
-    const subject = encodeURIComponent(formSubject);
-    const body = encodeURIComponent(
-      `Имя: ${name}\nТелефон или ID: ${phone}\nКанал связи: ${channel}\n`,
-    );
-    setFeedback('Откроется почта для отправки… Если почты нет, добавьте ключ Web3Forms (см. .env.example).', null);
-    window.location.href = `mailto:${email}?subject=${subject}&body=${body}`;
+    const originalLabel = submitBtn?.textContent ?? '';
+    if (submitBtn) {
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Отправка…';
+    }
+    setFeedback('Отправляем…', null);
+
+    try {
+      const res = await fetch(leadsEndpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ name, phone, channel }),
+      });
+
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || !data.ok) {
+        throw new Error('API error');
+      }
+
+      setFeedback('Спасибо! Заявка отправлена — скоро свяжусь с вами.', 'ok');
+      form.reset();
+      window.setTimeout(() => {
+        dialog?.close();
+        setFeedback('', null);
+      }, 2200);
+    } catch {
+      setFeedback(
+        'Не удалось отправить заявку. Позвоните или напишите в Telegram / VK — ссылки ниже.',
+        'error',
+      );
+    } finally {
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.textContent = originalLabel;
+      }
+    }
   });
 </script>
