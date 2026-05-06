@@ -1,0 +1,11 @@
+services:
+  leads-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: vargsam-leads-api
+    restart: unless-stopped
+    env_file:
+      - .env.runtime
+    ports:
+      - "127.0.0.1:${PORT:-8787}:8787"

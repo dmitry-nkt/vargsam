@@ -6,5 +6,5 @@ public/docs
 .env
 .env.local
 .env.*.local
-api/.pid
 api/service.log
+api/.env.runtime

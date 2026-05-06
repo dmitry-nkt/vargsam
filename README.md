@@ -30,7 +30,7 @@ npm run build
 
 ### Мини-сервис заявок на VPS
 
-В репозитории есть `api/server.mjs` (Node.js + SMTP), принимает `POST /api/lead` и отправляет заявку на почту.
+В репозитории есть `api/server.mjs` (Node.js + SMTP), разворачивается на VPS в Docker и принимает `POST /api/lead`.
 
 Что нужно настроить один раз:
 
@@ -64,11 +64,12 @@ server {
 `DEPLOY_API_PATH`, `LEADS_PORT`, `LEADS_ALLOW_ORIGIN`, `LEADS_SMTP_HOST`, `LEADS_SMTP_PORT`,
 `LEADS_SMTP_SECURE`, `LEADS_SMTP_USER`, `LEADS_SMTP_PASS`, `LEADS_MAIL_FROM`, `LEADS_MAIL_TO`, `LEADS_SUBJECT`.
 
-3. Убедиться, что на сервере в `DEPLOY_API_PATH` доступен `node` и `npm`.
+3. На сервере `docker`/`docker compose` заранее не обязателен: workflow установит их автоматически при необходимости.
 
 После `push` в `main` workflow автоматически:
 - деплоит статику;
 - деплоит папку `api/` на VPS;
-- выполняет `npm ci --omit=dev`;
-- перезапускает API через `api/deploy-restart.sh`.
+- устанавливает Docker/Compose на сервере (если отсутствуют);
+- создаёт `.env.runtime` из GitHub Secrets;
+- поднимает API через `docker compose up -d --build`.
 

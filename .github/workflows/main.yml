@@ -121,6 +121,35 @@ jobs:
           envs: PORT,ALLOW_ORIGIN,SMTP_HOST,SMTP_PORT,SMTP_SECURE,SMTP_USER,SMTP_PASS,MAIL_FROM,MAIL_TO,LEADS_SUBJECT
           script: |
             set -e
+            if ! command -v docker >/dev/null 2>&1; then
+              if command -v sudo >/dev/null 2>&1; then
+                curl -fsSL https://get.docker.com | sudo sh
+              else
+                curl -fsSL https://get.docker.com | sh
+              fi
+            fi
+
+            if ! docker compose version >/dev/null 2>&1; then
+              if command -v sudo >/dev/null 2>&1; then
+                sudo apt-get update -y
+                sudo apt-get install -y docker-compose-plugin
+              else
+                apt-get update -y
+                apt-get install -y docker-compose-plugin
+              fi
+            fi
+
             cd "${{ secrets.DEPLOY_API_PATH }}"
-            npm ci --omit=dev
-            ./deploy-restart.sh
+            printf '%s\n' \
+              "PORT=${PORT}" \
+              "ALLOW_ORIGIN=${ALLOW_ORIGIN}" \
+              "SMTP_HOST=${SMTP_HOST}" \
+              "SMTP_PORT=${SMTP_PORT}" \
+              "SMTP_SECURE=${SMTP_SECURE}" \
+              "SMTP_USER=${SMTP_USER}" \
+              "SMTP_PASS=${SMTP_PASS}" \
+              "MAIL_FROM=${MAIL_FROM}" \
+              "MAIL_TO=${MAIL_TO}" \
+              "LEADS_SUBJECT=${LEADS_SUBJECT}" > .env.runtime
+
+            docker compose up -d --build
