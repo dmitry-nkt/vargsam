@@ -37,6 +37,12 @@ npm run build
 1. **Nginx прокси** на VPS:
 
 ```nginx
+location / {
+  proxy_pass http://127.0.0.1:8080;
+  proxy_set_header Host $host;
+  proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+}
+
 location /api/ {
   proxy_pass http://127.0.0.1:8787;
   proxy_set_header Host $host;
@@ -51,6 +57,12 @@ server {
   server_name yggdrasil-ko.ru www.yggdrasil-ko.ru;
 
   # ... остальная конфигурация сайта ...
+
+  location / {
+    proxy_pass http://127.0.0.1:8080;
+    proxy_set_header Host $host;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+  }
 
   location /api/ {
     proxy_pass http://127.0.0.1:8787;
@@ -67,9 +79,9 @@ server {
 3. На сервере `docker`/`docker compose` заранее не обязателен: workflow установит их автоматически при необходимости.
 
 После `push` в `main` workflow автоматически:
-- деплоит статику;
+- деплоит статику в Docker-контейнер nginx;
 - деплоит папку `api/` на VPS;
-- устанавливает Docker/Compose на сервере (если отсутствуют);
+- проверяет/устанавливает Docker/Compose на сервере (если отсутствуют);
 - создаёт `.env.runtime` из GitHub Secrets;
-- поднимает API через `docker compose up -d --build`.
+- поднимает статику и API через `docker compose`.
 

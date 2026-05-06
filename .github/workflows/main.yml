@@ -37,6 +37,39 @@ jobs:
           name: dist
           path: dist
 
+  ensure-vps-docker:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ensure Docker and Compose on server
+        uses: appleboy/ssh-action@v1.2.2
+        with:
+          host: ${{ secrets.DEPLOY_HOST }}
+          username: ${{ secrets.DEPLOY_USER }}
+          key: ${{ secrets.DEPLOY_SSH_KEY }}
+          script: |
+            set -e
+            if ! command -v docker >/dev/null 2>&1; then
+              if command -v sudo >/dev/null 2>&1; then
+                curl -fsSL https://get.docker.com | sudo sh
+              else
+                curl -fsSL https://get.docker.com | sh
+              fi
+            fi
+
+            if ! docker compose version >/dev/null 2>&1; then
+              if command -v sudo >/dev/null 2>&1; then
+                sudo apt-get update -y
+                sudo apt-get install -y docker-compose-plugin
+              else
+                apt-get update -y
+                apt-get install -y docker-compose-plugin
+              fi
+            fi
+
+            docker --version
+            docker compose version
+
   deploy-github-pages:
     needs: build
     runs-on: ubuntu-latest
@@ -56,27 +89,60 @@ jobs:
           keep_files: true
 
   deploy-vps:
-    needs: build
+    needs: [build, ensure-vps-docker]
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
       - name: Download dist
         uses: actions/download-artifact@v4
         with:
           name: dist
           path: dist
 
-      - name: Rsync to server
+      - name: Ensure static deploy directory exists on server
+        uses: appleboy/ssh-action@v1.2.2
+        with:
+          host: ${{ secrets.DEPLOY_HOST }}
+          username: ${{ secrets.DEPLOY_USER }}
+          key: ${{ secrets.DEPLOY_SSH_KEY }}
+          script: |
+            mkdir -p "${{ secrets.DEPLOY_PATH }}/dist"
+
+      - name: Rsync static site files to server
         uses: burnett01/rsync-deployments@v8
         with:
           switches: -avzr --delete
           path: dist/
+          remote_path: ${{ secrets.DEPLOY_PATH }}/dist
+          remote_host: ${{ secrets.DEPLOY_HOST }}
+          remote_user: ${{ secrets.DEPLOY_USER }}
+          remote_key: ${{ secrets.DEPLOY_SSH_KEY }}
+
+      - name: Rsync static Docker config to server
+        uses: burnett01/rsync-deployments@v8
+        with:
+          switches: -avzr
+          path: deploy/static/
           remote_path: ${{ secrets.DEPLOY_PATH }}
           remote_host: ${{ secrets.DEPLOY_HOST }}
           remote_user: ${{ secrets.DEPLOY_USER }}
           remote_key: ${{ secrets.DEPLOY_SSH_KEY }}
 
+      - name: Restart static site container
+        uses: appleboy/ssh-action@v1.2.2
+        with:
+          host: ${{ secrets.DEPLOY_HOST }}
+          username: ${{ secrets.DEPLOY_USER }}
+          key: ${{ secrets.DEPLOY_SSH_KEY }}
+          script: |
+            set -e
+            cd "${{ secrets.DEPLOY_PATH }}"
+            docker compose up -d
+
   deploy-vps-leads-api:
-    needs: build
+    needs: [build, ensure-vps-docker]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -121,24 +187,6 @@ jobs:
           envs: PORT,ALLOW_ORIGIN,SMTP_HOST,SMTP_PORT,SMTP_SECURE,SMTP_USER,SMTP_PASS,MAIL_FROM,MAIL_TO,LEADS_SUBJECT
           script: |
             set -e
-            if ! command -v docker >/dev/null 2>&1; then
-              if command -v sudo >/dev/null 2>&1; then
-                curl -fsSL https://get.docker.com | sudo sh
-              else
-                curl -fsSL https://get.docker.com | sh
-              fi
-            fi
-
-            if ! docker compose version >/dev/null 2>&1; then
-              if command -v sudo >/dev/null 2>&1; then
-                sudo apt-get update -y
-                sudo apt-get install -y docker-compose-plugin
-              else
-                apt-get update -y
-                apt-get install -y docker-compose-plugin
-              fi
-            fi
-
             cd "${{ secrets.DEPLOY_API_PATH }}"
             printf '%s\n' \
               "PORT=${PORT}" \
