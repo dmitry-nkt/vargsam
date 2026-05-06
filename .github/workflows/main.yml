@@ -142,13 +142,10 @@ jobs:
 
       - name: Restart static site container, TLS (Let's Encrypt), reload nginx
         uses: appleboy/ssh-action@v1.2.2
-        env:
-          LETSENCRYPT_EMAIL: ${{ secrets.LETSENCRYPT_EMAIL }}
         with:
           host: ${{ secrets.DEPLOY_HOST }}
           username: ${{ secrets.DEPLOY_USER }}
           key: ${{ secrets.DEPLOY_SSH_KEY }}
-          envs: LETSENCRYPT_EMAIL
           script: |
             set -e
             DEPLOY_PATH="${{ secrets.DEPLOY_PATH }}"
@@ -161,10 +158,6 @@ jobs:
             $SUDO mkdir -p /var/www/certbot/.well-known/acme-challenge
 
             if [ ! -f "$CERT" ]; then
-              if [ -z "${LETSENCRYPT_EMAIL:-}" ]; then
-                echo 'Missing GitHub secret LETSENCRYPT_EMAIL (needed for first certbot run)'
-                exit 1
-              fi
               $SUDO install -m 644 "$DEPLOY_PATH/nginx-host/yggdrasil-ko.ru.bootstrap" /etc/nginx/sites-available/yggdrasil-ko.ru
               $SUDO ln -sf /etc/nginx/sites-available/yggdrasil-ko.ru /etc/nginx/sites-enabled/yggdrasil-ko.ru
               $SUDO nginx -t
@@ -178,7 +171,7 @@ jobs:
               $SUDO certbot certonly \
                 --webroot -w /var/www/certbot \
                 -d yggdrasil-ko.ru -d www.yggdrasil-ko.ru \
-                --email "$LETSENCRYPT_EMAIL" \
+                --email admin@yggdrasil-ko.ru \
                 --agree-tos --non-interactive --no-eff-email
             fi
 
