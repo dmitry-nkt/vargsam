@@ -54,7 +54,7 @@ location /api/ {
 
 ```nginx
 server {
-  server_name yggdrasil-ko.ru www.yggdrasil-ko.ru;
+  server_name yggdrasil-ko.ru;
 
   # ... остальная конфигурация сайта ...
 

@@ -3,7 +3,7 @@
 server {
     listen 80;
     listen [::]:80;
-    server_name yggdrasil-ko.ru www.yggdrasil-ko.ru;
+    server_name yggdrasil-ko.ru;
 
     location ^~ /.well-known/acme-challenge/ {
         root /var/www/certbot;
@@ -19,7 +19,7 @@ server {
 server {
     listen 443 ssl http2;
     listen [::]:443 ssl http2;
-    server_name yggdrasil-ko.ru www.yggdrasil-ko.ru;
+    server_name yggdrasil-ko.ru;
 
     ssl_certificate /etc/letsencrypt/live/yggdrasil-ko.ru/fullchain.pem;
     ssl_certificate_key /etc/letsencrypt/live/yggdrasil-ko.ru/privkey.pem;
