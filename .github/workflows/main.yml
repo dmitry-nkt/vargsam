@@ -108,7 +108,7 @@ jobs:
           username: ${{ secrets.DEPLOY_USER }}
           key: ${{ secrets.DEPLOY_SSH_KEY }}
           script: |
-            mkdir -p "${{ secrets.DEPLOY_PATH }}/dist"
+            mkdir -p "${{ secrets.DEPLOY_PATH }}/dist" "${{ secrets.DEPLOY_PATH }}/nginx-host"
 
       - name: Rsync static site files to server
         uses: burnett01/rsync-deployments@v8
@@ -130,7 +130,17 @@ jobs:
           remote_user: ${{ secrets.DEPLOY_USER }}
           remote_key: ${{ secrets.DEPLOY_SSH_KEY }}
 
-      - name: Restart static site container
+      - name: Rsync host nginx site config to server
+        uses: burnett01/rsync-deployments@v8
+        with:
+          switches: -avzr
+          path: deploy/host-nginx/
+          remote_path: ${{ secrets.DEPLOY_PATH }}/nginx-host
+          remote_host: ${{ secrets.DEPLOY_HOST }}
+          remote_user: ${{ secrets.DEPLOY_USER }}
+          remote_key: ${{ secrets.DEPLOY_SSH_KEY }}
+
+      - name: Restart static site container and reload host nginx
         uses: appleboy/ssh-action@v1.2.2
         with:
           host: ${{ secrets.DEPLOY_HOST }}
@@ -140,6 +150,13 @@ jobs:
             set -e
             cd "${{ secrets.DEPLOY_PATH }}"
             docker compose up -d
+            if [ "$(id -u)" -eq 0 ]; then SUDO=""; else SUDO=sudo; fi
+            $SUDO install -m 644 "${{ secrets.DEPLOY_PATH }}/nginx-host/yggdrasil-ko.ru" /etc/nginx/sites-available/yggdrasil-ko.ru
+            $SUDO ln -sf /etc/nginx/sites-available/yggdrasil-ko.ru /etc/nginx/sites-enabled/yggdrasil-ko.ru
+            if command -v nginx >/dev/null 2>&1; then
+              $SUDO nginx -t
+              $SUDO systemctl reload nginx
+            fi
 
   deploy-vps-leads-api:
     needs: [build, ensure-vps-docker]
